@@ -11,7 +11,7 @@ const { ethers } = require("hardhat");
 // Main deployment function.
 async function main() {
   // 1. Retrieve signers from the ethers provider.
-  const [owner] = await ethers.getSigners();
+  const [owner, treasury, otherAccount] = await ethers.getSigners();
   console.log(`Deploying contracts with the account: ${owner.address}`);
 
   // 2. Initialize a new contract factory for the Uniswap V2 Factory.
@@ -30,7 +30,7 @@ async function main() {
   const factoryAddress = await factory.getAddress();
   console.log(`Factory deployed to ${factoryAddress}`);
 
-  // 5. Initialize a contract factory specifically for the Tether (USDT) token.
+  // // 5. Initialize a contract factory specifically for the Tether (USDT) token.
   // const USDT = await ethers.getContractFactory("Tether", owner);
 
   // // 6. Deploy the USDT contract using the above-initialized factory.
@@ -40,34 +40,34 @@ async function main() {
   // const usdtAddress = await usdt.getAddress();
   // console.log(`USDT deployed to ${usdtAddress}`);
 
-  // 8. Similarly, initialize a contract factory for the UsdCoin (USDC) token.
-  const USDC = await ethers.getContractFactory("AuditAIToken", owner);
+  // 8. Similarly, initialize a contract factory for the UsdCoin  token) token.
+  const token = await ethers.getContractFactory("AuditAIToken", owner);
 
-  // 9. Deploy the USDC contract.
-  const usdc = await USDC.deploy(owner.address);
+  // 9. Deploy the token contract.
+  const Token = await token.deploy(treasury);
 
-  // 10. Get the address of the deployed USDC contract.
-  const usdcAddress = await usdc.getAddress();
-  console.log(`USDC deployed to ${usdcAddress}`);
+  // 10. Get the address of the deployed token contract.
+  const tokenAddress = await Token.getAddress();
+  console.log( `token deployed to ${tokenAddress}`);
 
   /**
    * Now that we have deployed the Factory contract and the two ERC20 tokens,
    * we can deploy the Router contract.
    * The Router contract requires the address of the Factory contract and the WETH9 contract.
    * The WETH9 contract is a wrapper for the ETH token.
-   * But prior to that, we need to mint some USDT and USDC tokens to the owner. Lets do that first.
+   * But prior to that, we need to mint some USDT and token tokens to the owner. Lets do that first.
    */
 
   // 11. Mint 1000 USDT tokens to the owner.
   // await usdt.connect(owner).mint(owner.address, ethers.parseEther("10000"));
 
-  // 12. Mint 1000 USDC tokens to the owner.
-  await usdc.connect(owner).mint(owner.address, ethers.parseEther("1000"));
+  // 12. Mint 1000 token tokens to the owner.
+  await Token.connect(owner).mint(owner.address, ethers.parseEther("10000"));
 
-  // 13. Utilizing the Factory contract, create a trading pair using the addresses of USDT and USDC.
+  // // 13. Utilizing the Factory contract, create a trading pair using the addresses of USDT and token.
   // const tx1 = await factory.createPair(usdtAddress, usdcAddress);
 
-  // 14. Wait for the transaction to be confirmed on the blockchain.
+  // // 14. Wait for the transaction to be confirmed on the blockchain.
   // await tx1.wait();
 
   // 15. Retrieve the address of the created trading pair from the Factory contract.
@@ -104,16 +104,12 @@ async function main() {
 
   // const approveTx1 = await usdt.approve(routerAddress, MaxUint256);
   // await approveTx1.wait();
-  const approvalTx2 = await usdc.approve(routerAddress, MaxUint256);
+  const approvalTx2 = await Token.approve(routerAddress, MaxUint256);
   await approvalTx2.wait();
 
   const token0Amount = ethers.parseUnits("1000");
   const token1Amount = ethers.parseUnits("1000");
 
-  // const lpTokenBalanceBefore = await pair.balanceOf(owner.address);
-  // console.log(
-  //   `LP tokens for the owner before: ${lpTokenBalanceBefore.toString()}`
-  // );
 
   const deadline = Math.floor(Date.now() / 1000) + 10 * 60;
   // const addLiquidityTx = await router
@@ -133,7 +129,7 @@ async function main() {
 //   const addLiquidityEthTx = await router
 //   .connect(owner)
 //   .addLiquidityETH(
-//     usdtAddress,
+//     usdcAddress,
 //     token0Amount,
 //     token1Amount,
 //     token0Amount,
@@ -144,28 +140,28 @@ async function main() {
 // await addLiquidityEthTx.wait();
 
 
-//   // 21. Set Router address.
-//   await usdc.setRouterAddress(routerAddress);
-//   await usdc.setUSDTAddress(usdtAddress);
+const pairAddressWeth = await factory.getPair(tokenAddress, weth);
+console.log(`PairWETH deployed to ${pairAddressWeth}`);
+  // 21. Set Router address.
+  await Token.setRouterAddress(routerAddress);
+  await Token.setPairAddress(pairAddressWeth);
 
-//   const pairAddressWeth = await factory.getPair(usdtAddress, weth);
-//   console.log(`PairWETH deployed to ${pairAddressWeth}`);
-
-
-  
+const pair = new Contract(pairAddressWeth, pairArtifact.abi, owner);
 
 
   // Check LP token balance for the owner
-  // const lpTokenBalance = await pair.balanceOf(owner.address);
-  // console.log(`LP tokens for the owner: ${lpTokenBalance.toString()}`);
+//   const lpTokenBalance = await pair.balanceOf(owner.address);
+//   console.log(`LP tokens for the owner: ${lpTokenBalance.toString()}`);
 
-  // reserves = await pair.getReserves();
-  // console.log(`Reserves: ${reserves[0].toString()}, ${reserves[1].toString()}`);
+//   reserves = await pair.getReserves();
+//   console.log(`Reserves: ${reserves[0].toString()}, ${reserves[1].toString()}`);
 
-  console.log("USDC_ADDRESS", usdcAddress);
+  // console.log("USDT_ADDRESS", usdtAddress);
+  console.log( "token_ADDRESS", tokenAddress);
   console.log("WETH_ADDRESS", wethAddress);
   console.log("FACTORY_ADDRESS", factoryAddress);
   console.log("ROUTER_ADDRESS", routerAddress);
+  console.log("PAIR_ADDRESS", pairAddressWeth);
 }
 
 // This command is used to run the script using hardhat.

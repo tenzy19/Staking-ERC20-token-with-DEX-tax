@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract AuditAIStaking is Ownable {
+contract Staking is Ownable {
     IERC20 public immutable token;
 
     uint public total;
@@ -30,7 +30,6 @@ contract AuditAIStaking is Ownable {
     event Unstaked(address indexed user, uint amount, uint percent);
 
     error withdrawError(string _reason);
-
 
     
 

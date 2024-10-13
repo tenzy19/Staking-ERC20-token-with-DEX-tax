@@ -8,7 +8,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 
 
-contract AuditAIToken is ERC20, Ownable {
+contract TokenAndDistribution is ERC20, Ownable {
     address public immutable feeCollector;
     address public staking;
     IUniswapV2Router02 private uniswapRouter;
@@ -222,9 +222,9 @@ contract AuditAIToken is ERC20, Ownable {
         //localhost router 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
         //testnet router 0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008
 
-        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008);
-        uniswapRouter = _uniswapV2Router;
-        uniswapPair = IUniswapV2Factory(_uniswapV2Router.factory()).getPair(address(this), _uniswapV2Router.WETH());
+        // IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0xC532a74256D3Db42D0Bf7a0400fEFDbad7694008);
+        // uniswapRouter = _uniswapV2Router;
+        uniswapPair = IUniswapV2Factory(uniswapRouter.factory()).getPair(address(this), uniswapRouter.WETH());
         require(address(uniswapPair) != address(0), "uniswap pair is not found, something went wrong, have you created pair for this token and WETH?");
     }
 
